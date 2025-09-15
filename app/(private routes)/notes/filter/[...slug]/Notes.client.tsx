@@ -9,7 +9,7 @@ import { fetchNotes } from "@/lib/api";
 import NoteList from "@/components/NoteList/NoteList";
 import SearchBox from "@/components/SearchBox/SearchBox";
 import Pagination from "@/components/Pagination/Pagination";
-import styles from "@/app/notes/filter/[...slug]/page.module.css";
+import styles from "./page.module.css";
 
 interface NotesClientProps {
   initialPage: number;

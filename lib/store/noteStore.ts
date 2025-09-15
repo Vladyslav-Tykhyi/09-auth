@@ -22,7 +22,7 @@ const initialDraft: NoteDraft = {
 
 export const useNoteDraftStore = create<NoteDraftStore>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       draft: initialDraft,
       setDraft: (note) =>
         set((state) => ({

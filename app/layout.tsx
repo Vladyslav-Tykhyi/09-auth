@@ -4,8 +4,8 @@ import "./globals.css";
 import Header from "@/components/Header/Header";
 import Footer from "@/components/Footer/Footer";
 import TanStackProvider from "@/components/TanStackProvider/TanStackProvider";
+import AuthProvider from "../components/AuthProvider/AuthProvider";
 
-// Налаштування шрифту Roboto
 const roboto = Roboto({
   subsets: ["latin"],
   weight: ["300", "400", "500", "700"],
@@ -43,13 +43,17 @@ export default function RootLayout({
     <html lang="en">
       <body className={roboto.variable}>
         <TanStackProvider>
-          <Header />
-          <div style={{ display: "flex", minHeight: "100vh" }}>
-            <aside style={{ background: "#90a8afff", padding: "0px" }}></aside>
-            <main style={{ flex: 1, padding: "20px" }}>{children}</main>
-          </div>
-          {modal}
-          <Footer />
+          <AuthProvider>
+            <Header />
+            <div style={{ display: "flex", minHeight: "100vh" }}>
+              <aside
+                style={{ background: "#90a8afff", padding: "0px" }}
+              ></aside>
+              <main style={{ flex: 1, padding: "20px" }}>{children}</main>
+            </div>
+            {modal}
+            <Footer />
+          </AuthProvider>
         </TanStackProvider>
       </body>
     </html>

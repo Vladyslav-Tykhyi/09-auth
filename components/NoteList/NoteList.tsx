@@ -1,8 +1,8 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useMutation } from "@tanstack/react-query";
 import Link from "next/link";
 import { Note } from "@/types/note";
 import styles from "@/components/NoteList/NoteList.module.css";
-import { deleteNote } from "@/lib/api";
+import { clientApi } from "@/lib/api/clientApi";
 
 interface NoteListProps {
   notes: Note[];
@@ -11,22 +11,51 @@ interface NoteListProps {
 export default function NoteList({ notes }: NoteListProps) {
   const queryClient = useQueryClient();
 
-  const deleteNoteMutation = useMutation({
-    mutationFn: deleteNote,
-    onSuccess: () => {
+  const deleteMutation = useMutation({
+    mutationFn: clientApi.deleteNote,
+    onMutate: async (id: string) => {
+      // Скасовуємо поточні запити для уникнення конфліктів
+      await queryClient.cancelQueries({ queryKey: ["notes"] });
+
+      // Зберігаємо попередні дані для відкату
+      const previousNotes = queryClient.getQueryData<{
+        notes: Note[];
+        totalPages: number;
+      }>(["notes"]);
+
+      // Оптимістично оновлюємо UI
+      if (previousNotes) {
+        queryClient.setQueryData(["notes"], {
+          ...previousNotes,
+          notes: previousNotes.notes.filter((note) => note.id !== id),
+        });
+      }
+
+      return { previousNotes };
+    },
+    onError: (error, id, context) => {
+      console.error("Помилка при видаленні:", error);
+
+      // Відкатуємо зміни у разі помилки
+      if (context?.previousNotes) {
+        queryClient.setQueryData(["notes"], context.previousNotes);
+      }
+
+      // Інвалідуємо запити для оновлення даних
       queryClient.invalidateQueries({ queryKey: ["notes"] });
     },
-    onError: (error) => {
-      console.error("Помилка при видаленні нотатки:", error);
+    onSuccess: () => {
+      // Інвалідуємо запити для оновлення даних після успішного видалення
+      queryClient.invalidateQueries({ queryKey: ["notes"] });
     },
   });
 
-  const handleDelete = (id: string, e: React.MouseEvent) => {
+  const handleDelete = async (id: string, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
 
     if (window.confirm("Ви впевнені, що хочете видалити цю нотатку?")) {
-      deleteNoteMutation.mutate(id);
+      deleteMutation.mutate(id);
     }
   };
 
@@ -52,9 +81,12 @@ export default function NoteList({ notes }: NoteListProps) {
               <button
                 className={styles.button}
                 onClick={(e) => handleDelete(note.id, e)}
-                disabled={deleteNoteMutation.isPending}
+                disabled={
+                  deleteMutation.isPending &&
+                  deleteMutation.variables === note.id
+                }
               >
-                {deleteNoteMutation.isPending ? "Видалення..." : "Delete"}
+                Delete
               </button>
             </div>
           </div>

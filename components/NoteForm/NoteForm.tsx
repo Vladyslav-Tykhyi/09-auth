@@ -2,7 +2,9 @@
 
 import { useRouter } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createNote } from "@/lib/api";
+
+import { clientApi } from "@/lib/api/clientApi"; // Змінено імпорт
+
 import { toast } from "react-hot-toast";
 import styles from "./NoteForm.module.css";
 import { NewNote, NoteTag } from "../../types/note";
@@ -12,14 +14,15 @@ export default function NoteForm() {
   const router = useRouter();
   const queryClient = useQueryClient();
 
+  // Отримуємо стан чернетки та функції для роботи з нею
   const { draft, setDraft, clearDraft } = useNoteDraftStore();
 
   const mutation = useMutation({
-    mutationFn: createNote,
+    mutationFn: clientApi.createNote, // Використовуємо clientApi.createNote
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["notes"] });
       toast.success("Note created successfully!");
-      clearDraft();
+      clearDraft(); // Очищаємо чернетку після успішного створення
       router.push("/notes/filter/All");
     },
     onError: (error) => {
@@ -28,6 +31,7 @@ export default function NoteForm() {
     },
   });
 
+  // Обробник зміни полів форми
   const handleChange = (field: keyof typeof draft, value: string) => {
     setDraft({ [field]: value });
   };
@@ -43,6 +47,7 @@ export default function NoteForm() {
   };
 
   const handleCancel = () => {
+    // Чернетка НЕ очищається при скасуванні
     router.push("/notes/filter/All");
   };
 
