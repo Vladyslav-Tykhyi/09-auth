@@ -41,15 +41,14 @@ export default async function NoteDetailPage({ params }: Props) {
   const { id } = await params;
   const queryClient = new QueryClient();
 
-  // Попереднє завантаження даних
-  const note = await queryClient.fetchQuery({
+  await queryClient.prefetchQuery({
     queryKey: ["note", id],
     queryFn: () => fetchNoteById(id),
   });
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <NoteDetailsClient note={note} />
+      <NoteDetailsClient id={id} />
     </HydrationBoundary>
   );
 }

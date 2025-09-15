@@ -14,8 +14,14 @@ export default function AuthProvider({
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const user = await authApi.checkSession();
-        setUser(user);
+        const sessionValid = await authApi.checkSession();
+
+        if (sessionValid) {
+          const user = await authApi.getMe();
+          setUser(user);
+        } else {
+          setUser(null);
+        }
       } catch (error) {
         console.error("Auth check failed:", error);
         setUser(null);
@@ -25,18 +31,11 @@ export default function AuthProvider({
     };
 
     checkAuth();
-  }, []); // Порожній масив залежностей - виконується тільки при монтажі
+  }, [setUser, setLoading]);
 
   if (isLoading) {
     return (
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "100vh",
-        }}
-      >
+      <div className="flex items-center justify-center h-screen">
         Loading...
       </div>
     );
