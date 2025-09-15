@@ -14,7 +14,7 @@ export default function NotePreview({ noteId }: NotePreviewProps) {
   const router = useRouter();
 
   const {
-    data: note,
+    data: id,
     isLoading,
     isError,
     error,
@@ -50,7 +50,7 @@ export default function NotePreview({ noteId }: NotePreviewProps) {
     );
   }
 
-  if (!note) {
+  if (!id) {
     return (
       <Modal onClose={handleClose}>
         <div className="not-found-container">
@@ -63,7 +63,7 @@ export default function NotePreview({ noteId }: NotePreviewProps) {
 
   return (
     <Modal onClose={handleClose}>
-      <NoteDetailsClient note={note} />
+      <NoteDetailsClient id={noteId} />
     </Modal>
   );
 }
