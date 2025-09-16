@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useAuthStore } from "@/lib/store/authStore";
 import { authApi } from "@/lib/api/clientApi";
+import type { ApiError } from "@/lib/api/api";
 
 export default function AuthProvider({
   children,
@@ -13,18 +14,21 @@ export default function AuthProvider({
 
   useEffect(() => {
     const checkAuth = async () => {
-      try {
-        const sessionValid = await authApi.checkSession();
+      setLoading(true);
 
-        if (sessionValid) {
-          const user = await authApi.getMe();
-          setUser(user);
+      try {
+        const user = await authApi.checkSession();
+        setUser(user); // als unauthorized → null
+      } catch (error) {
+        const apiError = error as ApiError;
+
+        if (apiError?.response?.status === 401) {
+          // Niet ingelogd, geen error tonen in console
+          setUser(null);
         } else {
+          console.error("Auth check failed:", error);
           setUser(null);
         }
-      } catch (error) {
-        console.error("Auth check failed:", error);
-        setUser(null);
       } finally {
         setLoading(false);
       }

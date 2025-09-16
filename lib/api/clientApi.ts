@@ -27,13 +27,12 @@ export const clientApi = {
     } catch (error: unknown) {
       const apiError = error as ApiError;
 
-      // Якщо це 404, все одно вважаємо logout успішним
+      // 404 → toch als success beschouwen
       if (apiError.response?.status === 404) {
         console.log("Logout endpoint returned 404, proceeding with cleanup");
         return;
       }
 
-      // Для інших помилок кидаємо виняток
       throw new Error(
         apiError.response?.data?.error || apiError.message || "Logout failed"
       );
@@ -46,20 +45,31 @@ export const clientApi = {
       return response.data;
     } catch (error: unknown) {
       const apiError = error as ApiError;
+
+      if (apiError?.response?.status === 409) {
+        throw new Error("This email is already registered");
+      }
+
       throw new Error(
-        apiError.response?.data?.error ||
-          apiError.message ||
+        apiError?.response?.data?.error ||
+          apiError?.message ||
           "Registration failed"
       );
     }
   },
 
-  checkSession: async (): Promise<User> => {
+  checkSession: async (): Promise<User | null> => {
     try {
       const response = await nextServer.get<User>("/auth/session");
       return response.data;
     } catch (error: unknown) {
       const apiError = error as ApiError;
+
+      // 401 = niet ingelogd → return null
+      if (apiError.response?.status === 401) {
+        return null;
+      }
+
       throw new Error(
         apiError.response?.data?.error ||
           apiError.message ||
