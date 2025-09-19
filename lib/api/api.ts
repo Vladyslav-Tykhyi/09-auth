@@ -2,7 +2,6 @@ import axios from "axios";
 
 // Базовий URL для API
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
-// const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 // Створюємо axios instance для клієнтських запитів
 export const nextServer = axios.create({
